@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+#log {
+  background-color: black;
+  font-family: monospace;
+  padding: 1em;
+} 
+#log .time { color: lightgray; }
+#log .info { color: white; }
+#log .error { color: red; }
+
+.sicm-widget {
+  border: solid 1px black;
+  display: block;
+  font-family: monospace;
+}
+
+.sicm-widget .sicm-widget-output {
+  background-color: lightgray;
+  padding: 1em;
+}
+
+.sicm-widget .sicm-widget-output-line {
+  background-color: white;
+  border-top: solid 1px black;
+  border-left: solid 1px black;
+  padding: .25em;
+  margin: .25em;
+}
+
+.sicm-widget .sicm-widget-output-error {
+  background-color: #ffaaaa;
+  padding: .5em;
+}
+
+.sicm-widget .sicm-widget-input {
+  border-top: solid 1px black;
+  background-color: darkgray;
+  padding: 1em;
+}
+
+.sicm-widget .sicm-widget-run-button {
+  border: solid 1px black;
+  background-color: darkgreen;
+  color: white;
+  margin: .5em;
+  padding: .5em;
+  cursor:pointer;
+}
+
+    </style>
+  </head>
+  <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <p>
+      Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMutils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.<br/>
+      The source is the Javascript in this page and compliled ClojureScript for <a href="src/repl/core.cljs"><code>repl.core</code></a>.
+      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field.
+      It then uses <code>repl.core/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.
+    </p>
+    <div id="log"></div>
+    <script>
+// Utility to log events to the page rather than the console.
+function log(str, clazz) {
+  clazz = clazz || 'info';
+  const now = new Date();
+  const time =
+      `${now.toTimeString().substr(0, 8)}.${(now.getMilliseconds() / 1000).toFixed(3).substr(2)}`;
+  $('#log').append(`<div class=${clazz}><span class="time">${time}&gt;</span> ${str}</div>`);
+
+  if (clazz === 'error') {
+    console.error(`${time}> ${str}`);
+  } else {
+    console.log(`${time}> ${str}`);
+  }
+}
+function logE(str) {
+  log(str, 'error');
+}
+log("Initializing...");
+
+// Core widget
+class SicmWidget {
+  constructor() {
+    this.widgetDiv = $('<div>').addClass('sicm-widget');
+    this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
+    this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 80, rows: 25}).appendTo(this.inputDiv).val(
+`(ns repl.core)
+(do
+  (pTeX (- (* 7 (/ 1 2)) 2))
+  (pTeX (asin -10))
+
+  (pTeX (square (sin (sicmutils.env/+ 'a 3))))
+
+  (pTeX ((D cube) 'x))
+
+  (defn L-central-polar [m U]
+    (fn [[_ [r] [rdot thetadot]]]
+      (sicmutils.env/- (sicmutils.env/* .5 m
+            (sicmutils.env/+ (square rdot)
+              (square (sicmutils.env/* r thetadot))))
+        (U r))))
+  (let [potential-fn (literal-function 'U)
+        L     (L-central-polar 'm potential-fn)
+        state (up (literal-function 'r)
+                  (literal-function 'theta))]
+    (pTeX
+    (((Lagrange-equations L) state) 't))))`);
+    this.runButton = $('<input type="submit"/>').addClass('sicm-widget-run-button').val("RUN").click(() => { this.onRun(); }).appendTo(this.inputDiv);
+    this.outputDiv = $('<div>').addClass('sicm-widget-output').appendTo(this.widgetDiv);
+
+    window.outputTex = (str) => this.outputTex(str);
+  }
+
+  onRun() {
+    if (window.repl === undefined) {
+      logE("window.repl namespace not defined. Wait for loading to complete and try again");
+      return;
+    }
+
+    this.outputDiv.empty();
+    repl.core.evalStr(`${this.inputText.val()}`, (result) => this.onResult(result));
+  }
+
+  onResult(result) {
+    if (result.error !== undefined) {
+      console.error("onResultJ " + result.error);
+      this.outputDiv.text(result.error).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+    } else {
+      this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');
+      MathJax.typeset();
+    }    
+  }
+
+  insertAfter(scriptNode) {
+    scriptNode ||= $('script').last();
+    this.widgetDiv.insertAfter(scriptNode);
+  }
+
+  outputTex(string) {
+    console.log(`TeX ${string}`);
+    $('<div>').addClass('sicm-widget-output-line').html(`\\(${string}\\)`).appendTo(this.outputDiv);
+  }
+};     
+
+new SicmWidget().insertAfter();
+    </script>
+    <script src="out/main.js" type="text/javascript"></script>
+  </body>
+</html>
