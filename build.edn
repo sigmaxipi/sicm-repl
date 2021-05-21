@@ -1,8 +1,4 @@
 {
   :language-in  :ecmascript-2016
   :optimizations :simple
- :output-to "out/main.js"
- ;:output-dir "out"
-;  :target :bundle
-;  :bundle-cmd {:none ["npx" "webpack" "./test.js" "-o" "out/"]}
 }
