@@ -88,21 +88,21 @@ class SicmWidget {
   constructor() {
     this.widgetDiv = $('<div>').addClass('sicm-widget');
     this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
-    this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 80, rows: 25}).appendTo(this.inputDiv).val(
-`(ns repl.core)
+    this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
+`(ns repl.core (:require [sicmutils.env :as S]))
 (do
-  (pTeX (- (* 7 (/ 1 2)) 2))
+  (pTeX (S/- (S/* 7 (S// 1 2)) 2))
   (pTeX (asin -10))
 
-  (pTeX (square (sin (sicmutils.env/+ 'a 3))))
+  (pTeX (square (sin (S/+ 'a 3))))
 
   (pTeX ((D cube) 'x))
 
   (defn L-central-polar [m U]
     (fn [[_ [r] [rdot thetadot]]]
-      (sicmutils.env/- (sicmutils.env/* .5 m
-            (sicmutils.env/+ (square rdot)
-              (square (sicmutils.env/* r thetadot))))
+      (S/- (S/* .5 m
+            (S/+ (square rdot)
+              (square (S/* r thetadot))))
         (U r))))
   (let [potential-fn (literal-function 'U)
         L     (L-central-polar 'm potential-fn)
