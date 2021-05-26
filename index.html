@@ -89,12 +89,15 @@ class SicmWidget {
     this.widgetDiv = $('<div>').addClass('sicm-widget');
     this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
     this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
-`(ns repl.core (:require [sicmutils.env :as S]))
+`(ns repl.core
+  (:require [sicmutils.env :as S])
+  (:require-macros [repl.macro]))
 (do
-  (pTeX (S/- (S/* 7 (S// 1 2)) 2))
+  (repl.macro/overrideCore)
+  (pTeX (- (* 7 (/ 1 2)) 2))
   (pTeX (asin -10))
 
-  (pTeX (square (sin (S/+ 'a 3))))
+  (pTeX (square (sin (+ 'a 3))))
 
   (pTeX ((D cube) 'x))
 
