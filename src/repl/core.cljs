@@ -29,5 +29,3 @@
 
 (cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))
 (js/log "CLJS loading complete.")
-
-(js/log (count (keys (ns-publics 'sicmutils.env))))

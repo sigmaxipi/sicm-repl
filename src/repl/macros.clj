@@ -10,7 +10,7 @@
     (defmacro overrideCore []
       '(do
         (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)
-        (def - sicmutils.env/-)
+                                                          (def - sicmutils.env/-)
         (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
         (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))")
 
@@ -31,4 +31,4 @@
 
 (defmacro bootstrap-env! [] '(do
   (repl.macros/importUnary [literal-function])
-  (repl.macros/importVariadic [asin atan cos cube D Lagrange-equations simplify sin square up])))
+  (repl.macros/importVariadic [asin atan compose cos cube D F->C Gamma Lagrange-equations simplify sin square up velocity])))
