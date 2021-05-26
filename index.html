@@ -103,9 +103,9 @@ class SicmWidget {
 
   (defn L-central-polar [m U]
     (fn [[_ [r] [rdot thetadot]]]
-      (S/- (S/* .5 m
-            (S/+ (square rdot)
-              (square (S/* r thetadot))))
+      (- (* .5 m
+            (+ (square rdot)
+              (square (* r thetadot))))
         (U r))))
   (let [potential-fn (literal-function 'U)
         L     (L-central-polar 'm potential-fn)

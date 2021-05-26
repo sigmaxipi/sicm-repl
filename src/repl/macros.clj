@@ -9,10 +9,10 @@
   "(ns repl.macro)
     (defmacro overrideCore []
       '(do
-        (defn + [x y] (sicmutils.env/+ x y))
-        (defn - [x y] (sicmutils.env/- x y))
-        (defn * [x y] (sicmutils.env/* x y))
-        (defn / [x y] (sicmutils.env// x y))))")
+        (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)
+        (def - sicmutils.env/-)
+        (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
+        (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))")
 
 (defmacro importUnary [vals]
   `(do 
