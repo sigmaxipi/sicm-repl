@@ -11,6 +11,7 @@
 } 
 #log .time { color: lightgray; }
 #log .info { color: white; }
+#log .warn { color: yellow; }
 #log .error { color: red; }
 
 .sicm-widget {
@@ -25,11 +26,18 @@
 }
 
 .sicm-widget .sicm-widget-output-line {
-  background-color: white;
   border-top: solid 1px black;
   border-left: solid 1px black;
   padding: .25em;
   margin: .25em;
+}
+
+.TeX {
+  background-color: white;
+}
+
+.CLJS {
+  background-color: lightgreen;
 }
 
 .sicm-widget .sicm-widget-output-error {
@@ -57,10 +65,10 @@
 }
 
     </style>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="codemirror.js"></script>
     <script src="clojure.js"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   </head>
   <body>
     <p>
@@ -81,12 +89,17 @@ function log(str, clazz) {
 
   if (clazz === 'error') {
     console.error(`${time}> ${str}`);
+  } else if (clazz === 'warn') {
+    console.warn(`${time}> ${str}`);
   } else {
     console.log(`${time}> ${str}`);
   }
 }
 function logE(str) {
   log(str, 'error');
+}
+function logW(str) {
+  log(str, 'warn');
 }
 log("Initializing...");
 
@@ -97,51 +110,55 @@ class SicmWidget {
     this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
 
     this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
-`(ns repl.core
+`; This block is only required if you need methods not imported into the current namespace.
+; SICMUtils/... will be available at 'S/...'
+(ns repl.core
   (:require [sicmutils.env :as S])
   (:require-macros [repl.macro]))
-(do
-  (repl.macro/overrideCore)
-  (pTeX (- (* 7 (/ 1 2)) 2))
-  (pTeX (asin -10))
+; Using '(ns ...)' overrides the +-*/ functions. Undo the override.  
+(repl.macro/overrideCore)
 
-  (pTeX (square (sin (+ 'a 3))))
+; Basic tests.
+(pTeX (- (* 7 (/ 1 2)) 2))
+(pTeX (asin -10))
 
-  (pTeX ((D cube) 'x))
+(pTeX (square (sin (+ 'a 3))))
 
-  (defn L-central-polar [m U]
-    (fn [[_ [r] [rdot thetadot]]]
-      (- (* .5 m
-            (+ (square rdot)
-              (square (* r thetadot))))
-        (U r))))
-  (let [potential-fn (literal-function 'U)
-        L     (L-central-polar 'm potential-fn)
-        state (up (literal-function 'r)
-                  (literal-function 'theta))]
-    (pTeX
-    (((Lagrange-equations L) state) 't)))
+(pTeX ((D cube) 'x))
+
+(defn L-central-polar [m U]
+  (fn [[_ [r] [rdot thetadot]]]
+    (- (* .5 m
+          (+ (square rdot)
+            (square (* r thetadot))))
+      (U r))))
+(let [potential-fn (literal-function 'U)
+      L     (L-central-polar 'm potential-fn)
+      state (up (literal-function 'r)
+                (literal-function 'theta))]
+  (pTeX
+  (((Lagrange-equations L) state) 't)))
 
 ; Exercise 1.29: Galilean Invariance
-  (defn L-free-particle [mass]
-    (fn [local]
-      (let [v (velocity local)]
-        (* (/ 1 2) mass (square v)))))
+(defn L-free-particle [mass]
+  (fn [local]
+    (let [v (velocity local)]
+      (* (/ 1 2) mass (square v)))))
 
-  (defn uniform-translate-shift->rect
-    [[t [xprime delta_x delta_v]]]
-    (+ xprime delta_x (* t delta_v)))
+(defn uniform-translate-shift->rect
+  [[t [xprime delta_x delta_v]]]
+  (+ xprime delta_x (* t delta_v)))
 
-  (defn L-translate-shift [m]
-    (compose (L-free-particle m)
-      (F->C uniform-translate-shift->rect)))
+(defn L-translate-shift [m]
+  (compose (L-free-particle m)
+    (F->C uniform-translate-shift->rect)))
 
-    (let [q (up (literal-function 'xprime)
-                (fn [_] 'Delta_x)
-                (fn [_] 'Delta_v))
-          f (compose (L-translate-shift 'm) (Gamma q))]
-      (pTeX (f 't)))
-  )`  );
+  (let [q (up (literal-function 'xprime)
+              (fn [_] 'Delta_x)
+              (fn [_] 'Delta_v))
+        f (compose (L-translate-shift 'm) (Gamma q))]
+    (pTeX (f 't)))
+`   );
     this.codemirror = CodeMirror.fromTextArea(this.inputText[0], {
       lineNumbers: true,
       mode:  "clojure",
@@ -162,15 +179,23 @@ class SicmWidget {
     }
 
     this.outputDiv.empty();
-    repl.core.evalStr(`${this.inputText.val()}`, (result) => this.onResult(result));
+    log("Eval started...");
+    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onResult(result));
+    log("...Eval completd.");
   }
 
   onResult(result) {
     if (result.error !== undefined) {
-      console.error("onResultJ " + result.error);
-      this.outputDiv.text(result.error).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      console.error(result);
+      let cause = result.error;
+      while (cause.cause != undefined) {
+        cause = cause.cause;
+      }
+
+      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
     } else {
       this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');
+      this.outputCljs(result.value && result.value.toString());
       MathJax.typeset();
     }    
   }
@@ -182,7 +207,12 @@ class SicmWidget {
 
   outputTex(string) {
     console.log(`TeX ${string}`);
-    $('<div>').addClass('sicm-widget-output-line').html(`\\(${string}\\)`).appendTo(this.outputDiv);
+    $('<div>').addClass('sicm-widget-output-line').addClass('TeX').html(`\\(${string}\\)`).appendTo(this.outputDiv);
+  }
+
+  outputCljs(string) {
+    console.log(`CLJS> ${string}`);
+    $('<div>').addClass('sicm-widget-output-line').addClass('CLJS').html(string).appendTo(this.outputDiv);
   }
 };     
 

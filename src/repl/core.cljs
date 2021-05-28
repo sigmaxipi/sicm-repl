@@ -1,10 +1,15 @@
 (ns repl.core
   (:require
+    [cljs.analyzer]
     [sicmutils.env :as env :include-macros true]
     [sicmutils.expression.render :as render :refer [->TeX]]
     [cljs.js :refer [compile-str empty-state eval-str js-eval]])
   (:require-macros [repl.macros] [sicmutils.env])
 )
+
+(defn warning-handler [warning-type env extra]
+  (js/logW (str (cljs.analyzer/message env (str "WARNING: " (cljs.analyzer/error-message warning-type extra))))))
+(set! cljs.analyzer/*cljs-warning-handlers* [warning-handler])
 
 (repl.macros/bootstrap-env!)
 
@@ -17,7 +22,7 @@
     (cb {:lang :clj :source (repl.macros/overrideCore)}))
 
 (def state (cljs.js/empty-state))
-(def opts { :context    :expr
+(def opts { :context    :statement
           :def-emits-var true
           :eval       js-eval
           :load       loader
@@ -28,4 +33,4 @@
   (eval-str state source "evalStr" opts (fn [result] (cb (clj->js result)))))
 
 (cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))
-(js/log "CLJS loading complete.")
+(js/log "...CLJS loading complete.")

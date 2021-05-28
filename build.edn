@@ -1,4 +1,8 @@
 {
+  :browser-repl false
+;  :dump-core false
   :language-in  :ecmascript-2016
   :optimizations :simple
+;  :cache-analysis true
+; :static-fns true
 }
