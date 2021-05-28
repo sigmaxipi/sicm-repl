@@ -10,7 +10,27 @@
             :devtools {
                 :http-root "."
                 :http-port 8700}}
-        :bootstrap-support {
+        :sicm-release {
+            :asset-path "out"
+            :compiler-options {
+                :optimizations :simple
+                :output-wrapper false}
+            :modules {:main {:entries [repl.core]}}
+            :output-dir "out"
+            :target :browser
+            :devtools {
+                :http-root "."
+                :http-port 8700}}
+        :bootstrap-dev {
+            :entries [cljs.js]
+            :exclude #{cljs.js}
+            :macros []
+            :output-dir "out/bootstrap"
+            :target :bootstrap}
+        :bootstrap-release {
+            :compiler-options {
+                :optimizations :simple
+                :output-wrapper false}
             :entries [cljs.js]
             :exclude #{cljs.js}
             :macros []

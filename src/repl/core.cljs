@@ -18,7 +18,7 @@
 (defonce state (cljs-env/default-compiler-env))
 
 (def opts {
-  :context statement
+  :context :statement
   :eval js-eval
   :load (partial boot/load state)
   :ns 'repl.core
@@ -29,5 +29,5 @@
 
 (boot/init state {:path "out/bootstrap"} (fn []))
 
-(cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))
+;(cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))
 (js/log "CLJS loading complete.")
