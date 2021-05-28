@@ -2,6 +2,8 @@
   (:require
     [cljs.analyzer]
     [cljs.js :refer [compile-str empty-state eval-str js-eval]]
+    [cljs.reader]
+    [cljs.tools.reader.reader-types]
     [clojure.string :as str]
     [sicmutils.env :as env :include-macros true]
     [sicmutils.expression.render :as render :refer [->TeX]])
@@ -24,7 +26,14 @@
     (cb {:lang :clj :source (repl.macros/overrideCore)}))
 
 (defn split-into-expressions [source]
-  (str/split source #"\n\n"))
+  (loop [string source
+         exprs []]
+    (if-not string
+      exprs
+      (let [trimmed-string (clojure.string/replace string #"^[\s\n]*" "")
+            sentinel (js-obj)
+            [obj expr] (cljs.tools.reader/read+string {:eof sentinel} (cljs.tools.reader.reader-types/source-logging-push-back-reader trimmed-string))]
+        (if (= sentinel obj) exprs (recur (subs trimmed-string (+ 1 (count expr))) (conj exprs expr)))))))
 
 (def state (cljs.js/empty-state))
 
@@ -65,7 +74,7 @@
                     (eval-cb (first exprs) (clj->js @*eval-result*))
                     (recur (next exprs))))))
             ; Send final value if we didn't error out.
-            (if-not (:error @*eval-result*) (eval-cb (first exprs) (clj->js @*eval-result*))))))))
+            (if-not (:error @*eval-result*) (eval-cb "" (clj->js @*eval-result*))))))))
 
 
 (cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))

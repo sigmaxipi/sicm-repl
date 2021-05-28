@@ -225,7 +225,7 @@ class SicmWidget {
   }
 
   outputTex(string) {
-    console.log(`TeX ${string}`);
+    console.log(`TeX> ${string}`);
     $('<div>').addClass('sicm-widget-output-line').addClass('TeX').html(`\\(${string}\\)`).appendTo(this.outputDiv);
   }
 

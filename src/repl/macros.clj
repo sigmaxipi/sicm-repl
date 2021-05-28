@@ -2,18 +2,11 @@
   (:require [cljs.env :as env])
   (:require [sicmutils.env]))
 
+; Load analyzer cache to allow symbol lookups.
 (defmacro analyzer-state [[_ ns-sym]]
   `'~(get-in @env/*compiler* [:cljs.analyzer/namespaces ns-sym]))
 
-(defmacro overrideCore []
-  "(ns repl.macro)
-    (defmacro overrideCore []
-      '(do
-        (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)
-                                 (ns-unmap 'repl.core '-) (def - sicmutils.env/-)
-        (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
-        (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))")
-
+; Import sicmutils.env similar to sicmutils.env/bootstrap-repl!
 (defmacro importUnary [vals]
   `(do 
     ~@(for [v vals]
@@ -32,3 +25,13 @@
 (defmacro bootstrap-env! [] '(do
   (repl.macros/importUnary [literal-function])
   (repl.macros/importVariadic [asin atan compose cos cube D F->C Gamma Lagrange-equations simplify sin square up velocity + - * /])))
+
+; If (ns ...) (require ...) is called in the evaluation snippet, the math operators are overridden. This restores the bindings.
+(defmacro overrideCore []
+  "(ns repl.macro)
+    (defmacro overrideCore []
+      '(do
+        (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)
+                                 (ns-unmap 'repl.core '-) (def - sicmutils.env/-)
+        (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
+        (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))")
