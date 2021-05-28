@@ -1,0 +1,24 @@
+
+
+{
+    :builds {
+        :sicm-dev {
+            :asset-path "out"
+            :modules {:main {:entries [repl.core]}}
+            :output-dir "out"
+            :target :browser
+            :devtools {
+                :http-root "."
+                :http-port 8700}}
+        :bootstrap-support {
+            :entries [cljs.js]
+            :exclude #{cljs.js}
+            :macros []
+            :output-dir "out/bootstrap"
+            :target :bootstrap}
+    }
+    :dependencies [
+        [sicmutils/sicmutils "0.18.0"]],
+    :dev-http {9000 "."}
+    :source-paths ["src"]
+}

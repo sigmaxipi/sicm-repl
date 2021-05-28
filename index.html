@@ -97,51 +97,47 @@ class SicmWidget {
     this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
 
     this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
-`(ns repl.core
-  (:require [sicmutils.env :as S])
-  (:require-macros [repl.macro]))
-(do
-  (repl.macro/overrideCore)
-  (pTeX (- (* 7 (/ 1 2)) 2))
-  (pTeX (asin -10))
+`; Basic tests.
+(pTeX (- (* 7 (/ 1 2)) 2))
+(pTeX (asin -10))
 
-  (pTeX (square (sin (+ 'a 3))))
+(pTeX (square (sin (+ 'a 3))))
 
-  (pTeX ((D cube) 'x))
+(pTeX ((D cube) 'x))
 
-  (defn L-central-polar [m U]
-    (fn [[_ [r] [rdot thetadot]]]
-      (- (* .5 m
-            (+ (square rdot)
-              (square (* r thetadot))))
-        (U r))))
-  (let [potential-fn (literal-function 'U)
-        L     (L-central-polar 'm potential-fn)
-        state (up (literal-function 'r)
-                  (literal-function 'theta))]
-    (pTeX
-    (((Lagrange-equations L) state) 't)))
+(defn L-central-polar [m U]
+  (fn [[_ [r] [rdot thetadot]]]
+    (- (* .5 m
+          (+ (square rdot)
+            (square (* r thetadot))))
+      (U r))))
+(let [potential-fn (literal-function 'U)
+      L     (L-central-polar 'm potential-fn)
+      state (up (literal-function 'r)
+                (literal-function 'theta))]
+  (pTeX
+  (((Lagrange-equations L) state) 't)))
 
 ; Exercise 1.29: Galilean Invariance
-  (defn L-free-particle [mass]
-    (fn [local]
-      (let [v (velocity local)]
-        (* (/ 1 2) mass (square v)))))
+(defn L-free-particle [mass]
+  (fn [local]
+    (let [v (velocity local)]
+      (* (/ 1 2) mass (square v)))))
 
-  (defn uniform-translate-shift->rect
-    [[t [xprime delta_x delta_v]]]
-    (+ xprime delta_x (* t delta_v)))
+(defn uniform-translate-shift->rect
+  [[t [xprime delta_x delta_v]]]
+  (+ xprime delta_x (* t delta_v)))
 
-  (defn L-translate-shift [m]
-    (compose (L-free-particle m)
-      (F->C uniform-translate-shift->rect)))
+(defn L-translate-shift [m]
+  (compose (L-free-particle m)
+    (F->C uniform-translate-shift->rect)))
 
-    (let [q (up (literal-function 'xprime)
-                (fn [_] 'Delta_x)
-                (fn [_] 'Delta_v))
-          f (compose (L-translate-shift 'm) (Gamma q))]
-      (pTeX (f 't)))
-  )`  );
+  (let [q (up (literal-function 'xprime)
+              (fn [_] 'Delta_x)
+              (fn [_] 'Delta_v))
+        f (compose (L-translate-shift 'm) (Gamma q))]
+    (pTeX (f 't)))
+`   );
     this.codemirror = CodeMirror.fromTextArea(this.inputText[0], {
       lineNumbers: true,
       mode:  "clojure",
@@ -162,7 +158,7 @@ class SicmWidget {
     }
 
     this.outputDiv.empty();
-    repl.core.evalStr(`${this.inputText.val()}`, (result) => this.onResult(result));
+    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onResult(result));
   }
 
   onResult(result) {
