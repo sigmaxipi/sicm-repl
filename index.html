@@ -112,11 +112,11 @@ class SicmWidget {
     this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
 `; This block is only required if you need methods not imported into the current namespace.
 ; SICMUtils/... will be available at 'S/...'
-(ns repl.core
-  (:require [sicmutils.env :as S])
-  (:require-macros [repl.macro]))
+; (ns repl.core
+;   (:require [sicmutils.env :as S])
+;   (:require-macros [repl.macro]))
 ; Using '(ns ...)' overrides the +-*/ functions. Undo the override.  
-(repl.macro/overrideCore)
+; (repl.macro/overrideCore)
 
 ; Basic tests.
 (pTeX (- (* 7 (/ 1 2)) 2))
@@ -180,11 +180,10 @@ class SicmWidget {
 
     this.outputDiv.empty();
     log("Eval started...");
-    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onResult(result));
-    log("...Eval completd.");
+    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onCompileResult(result), (expr, result) => this.onEvalResult(expr, result));
   }
 
-  onResult(result) {
+  onCompileResult(result) {
     if (result.error !== undefined) {
       console.error(result);
       let cause = result.error;
@@ -193,10 +192,30 @@ class SicmWidget {
       }
 
       this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      logE("Compilation failed.");
+    } else {
+      log("Compilation successful.");
+    }
+  }
+
+  onEvalResult(expr, result) {
+    if (result === undefined) {
+      return;
+    }
+    if (result.error !== undefined) {
+      console.error(result);
+      let cause = result.error;
+      while (cause.cause != undefined) {
+        cause = cause.cause;
+      }
+
+      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data} <br/> EXPRESSION: <code>${expr}</code>`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      logE("...Eval failed.");
     } else {
       this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');
       this.outputCljs(result.value && result.value.toString());
       MathJax.typeset();
+      log("...Eval completed.");
     }    
   }
 
