@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="codemirror.css">
     <style>
+
+body {
+  font-family: sans-serif;
+  max-width: 60em;
+	margin: 0 auto;
+}
+
+code {
+  font-weight: bold;
+}
+
 #log {
   background-color: black;
   font-family: monospace;
@@ -11,6 +22,7 @@
 } 
 #log .time { color: lightgray; }
 #log .info { color: white; }
+#log .warn { color: yellow; }
 #log .error { color: red; }
 
 .sicm-widget {
@@ -19,31 +31,38 @@
   font-family: monospace;
 }
 
-.sicm-widget .sicm-widget-output {
+.sicm-widget-output {
   background-color: lightgray;
   padding: 1em;
 }
 
-.sicm-widget .sicm-widget-output-line {
-  background-color: white;
+.sicm-widget-output-line {
   border-top: solid 1px black;
   border-left: solid 1px black;
   padding: .25em;
   margin: .25em;
 }
 
-.sicm-widget .sicm-widget-output-error {
+.TeX {
+  background-color: white;
+}
+
+.CLJS {
+  background-color: lightgreen;
+}
+
+.sicm-widget-output-error {
   background-color: #ffaaaa;
   padding: .5em;
 }
 
-.sicm-widget .sicm-widget-input {
-  border-top: solid 1px black;
+.sicm-widget-input {
+  border-bottom: solid 1px black;
   background-color: darkgray;
   padding: 1em;
 }
 
-.sicm-widget .sicm-widget-run-button {
+.sicm-widget-run-button {
   border: solid 1px black;
   background-color: darkgreen;
   color: white;
@@ -57,19 +76,22 @@
 }
 
     </style>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="codemirror.js"></script>
     <script src="clojure.js"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   </head>
   <body>
     <p>
       Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMutils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.<br/>
-      The source is the Javascript in this page and compliled ClojureScript for <a href="src/repl/core.cljs"><code>repl.core</code></a>.
-      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field.
-      It then uses <code>repl.core/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.
+      The source is the Javascript in this page and compliled ClojureScript for <code>repl.core</code>.
+      There is also a <code>repl.macros</code> library and a <code>repl.eval</code> namespace used for evaluation.
+      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field <code>repl.eval</code> namespace.
+      It then uses <code>repl.eval/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.
+      <code>repl.macros/bootstrap-env!</code> only imports some items from <code>sicmutils.env</code> at the moment, but other items can be accessed via the <code>S/</code> alias such as <code>S/acos</code>.<br/>
+
+      Code is available at <a href="https://github.com/sigmaxipi/sicm-repl">github.com/sigmaxipi/sicm-repl</a>.
     </p>
-    <div id="log"></div>
     <script>
 // Utility to log events to the page rather than the console.
 function log(str, clazz) {
@@ -81,12 +103,17 @@ function log(str, clazz) {
 
   if (clazz === 'error') {
     console.error(`${time}> ${str}`);
+  } else if (clazz === 'warn') {
+    console.warn(`${time}> ${str}`);
   } else {
     console.log(`${time}> ${str}`);
   }
 }
 function logE(str) {
   log(str, 'error');
+}
+function logW(str) {
+  log(str, 'warn');
 }
 log("Initializing...");
 
@@ -137,7 +164,12 @@ class SicmWidget {
               (fn [_] 'Delta_v))
         f (compose (L-translate-shift 'm) (Gamma q))]
     (pTeX (f 't)))
-`   );
+
+(def g (literal-function 'g (-> (X Real Real) Real)))  
+(pTeX (g 'x 'y))
+
+"EVALUATION COMPLETE"`   );
+//this.inputText.val(`(pTeX 1) 2`);
     this.codemirror = CodeMirror.fromTextArea(this.inputText[0], {
       lineNumbers: true,
       mode:  "clojure",
@@ -158,16 +190,43 @@ class SicmWidget {
     }
 
     this.outputDiv.empty();
-    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onResult(result));
+    log("Eval started...");
+    repl.core.evalStr(`${this.codemirror.getValue()}`, (result) => this.onCompileResult(result), (expr, result) => this.onEvalResult(expr, result));
   }
 
-  onResult(result) {
+  onCompileResult(result) {
     if (result.error !== undefined) {
-      console.error("onResultJ " + result.error);
-      this.outputDiv.text(result.error).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      console.error(result);
+      let cause = result.error;
+      while (cause.cause != undefined) {
+        cause = cause.cause;
+      }
+
+      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      logE("Compilation failed.");
+    } else {
+      log("Compilation successful.");
+    }
+  }
+
+  onEvalResult(expr, result) {
+    if (result === undefined) {
+      return;
+    }
+    if (result.error !== undefined) {
+      console.error(result);
+      let cause = result.error;
+      while (cause.cause != undefined) {
+        cause = cause.cause;
+      }
+
+      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data} <br/> EXPRESSION: <code>${expr}</code>`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      logE("...Eval failed.");
     } else {
       this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');
+      this.outputCljs(result.value && result.value.toString());
       MathJax.typeset();
+      log("...Eval completed.");
     }    
   }
 
@@ -177,13 +236,19 @@ class SicmWidget {
   }
 
   outputTex(string) {
-    console.log(`TeX ${string}`);
-    $('<div>').addClass('sicm-widget-output-line').html(`\\(${string}\\)`).appendTo(this.outputDiv);
+    console.log(`TeX> ${string}`);
+    $('<div>').addClass('sicm-widget-output-line').addClass('TeX').html(`\\(${string}\\)`).appendTo(this.outputDiv);
+  }
+
+  outputCljs(string) {
+    console.log(`CLJS> ${string}`);
+    $('<div>').addClass('sicm-widget-output-line').addClass('CLJS').html(string).appendTo(this.outputDiv);
   }
 };     
 
 new SicmWidget().insertAfter();
     </script>
+    <div id="log"></div>
     <script src="out/main.js" type="text/javascript"></script>
   </body>
 </html>
