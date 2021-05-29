@@ -1,10 +1,10 @@
 (ns repl.macros
-  (:require [cljs.env :as env])
+  (:require [cljs.env])
   (:require [sicmutils.env]))
 
-; Load analyzer cache to allow symbol lookups.
+; Load analyzer cache from the app environment to the evaluation to allow symbol lookups.
 (defmacro analyzer-state [[_ ns-sym]]
-  `'~(get-in @env/*compiler* [:cljs.analyzer/namespaces ns-sym]))
+  `'~(get-in @cljs.env/*compiler* [:cljs.analyzer/namespaces ns-sym]))
 
 ; Import sicmutils.env similar to sicmutils.env/bootstrap-repl!
 (defmacro importUnary [vals]
@@ -28,7 +28,7 @@
 
 ; If (ns ...) (require ...) is called in the evaluation snippet, the math operators are overridden. This restores the bindings.
 (defmacro loadReplMacro []
-  "(ns repl.macroEval)
+  "(ns repl.eval-macros)
     (defmacro overrideCore []
       '(do
         (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)

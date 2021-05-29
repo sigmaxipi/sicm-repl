@@ -1,27 +1,22 @@
+; Module that contains the primary evaluation framework.
 (ns repl.core
   (:require
     [cljs.analyzer]
     [cljs.js :refer [compile-str empty-state eval-str js-eval]]
     [cljs.reader]
     [cljs.tools.reader.reader-types]
-    [sicmutils.abstract.function]
-    [sicmutils.env :as env :include-macros true]
-    [sicmutils.expression.render :as render :refer [->TeX]])
-  (:require-macros [repl.macros] [sicmutils.env])
+    [repl.eval])
 )
 
-(repl.macros/bootstrap-env!)
-
-(defn pTeX [ex]
-  (let [s (->TeX (simplify ex))]
-    (js/outputTex s)))
 
 ; Allow (require sicmutils.env) to work.
 (defn loader  [opts cb]
-  (if (= (:name opts) 'repl.macroEval)
+  (if (= (:name opts) 'repl.eval-macros)
+    ; Inject the repl.eval-macros string into the evaluation environment.
     (do
-      (println "(repl.macroEval loader " opts ")" (:name opts))
+      (println "(repl.eval-macros loader " opts ")" (:name opts))
       (cb {:lang :clj :source (repl.macros/loadReplMacro)}))
+    ; Loading other libraries isn't supported. Instead they come in via load-analysis-cache.
     (do
       (println "(dummy-loader " opts ")" (:name opts))
       (cb {:lang :clj :source ""}))
@@ -41,7 +36,6 @@
 
 ; Actual eval code.
 (def state (cljs.js/empty-state))
-
 (defn ^:export evalStr [source, compile-cb, eval-cb]
   ; Compile the entire source to check for syntax errors.
   (compile-str
@@ -52,7 +46,7 @@
       :def-emits-var true
       :eval       js-eval
       :load       loader
-      :ns 'repl.core
+      :ns 'repl.eval
       :source-map true}
     ; Handle result
     (fn [compile-result]
@@ -70,7 +64,7 @@
                   { :context    :expr
                     :eval       js-eval
                     :load       loader
-                    :ns 'repl.core
+                    :ns 'repl.eval
                     :source-map true}
                   (fn [eval-result] (reset! *eval-result* eval-result)))
                   (if (:error @*eval-result*)
@@ -79,25 +73,20 @@
             ; Send final value if we didn't error out.
             (if-not (:error @*eval-result*) (eval-cb "" (clj->js @*eval-result*))))))))
 
-; Load 'repl.core symbols into the evalution state.
-(cljs.js/load-analysis-cache! state 'repl.core (repl.macros/analyzer-state 'repl.core))
-
-; Reinit 'repl.core as an evaulation namespace.
 (defn init-state [state] 
+  ; Load 'repl.core symbols into the evalution state.
+  (cljs.js/load-analysis-cache! state 'repl.eval (repl.macros/analyzer-state 'repl.eval))
+  ; Reinit 'repl.core as an evaulation namespace.
   (eval-str
-    state "
-      (ns repl.core
-        (:require [sicmutils.abstract.function]
-                  [sicmutils.env :as S] )
-        (:require-macros [repl.macroEval :refer [literal-function]]))
-      (repl.macroEval/overrideCore)"
+    state
+    repl.eval/bootstrapString
     "initialEvalStr"
     { :context    :statement
       :eval       js-eval
       :load       loader
-      :ns 'repl.core
+      :ns 'repl.eval
       :source-map true}
-    js/console.log))
+    (fn [result] (println "Evaluation environment initialized."))))
 (init-state state)
 
 ; Output strings to Javascript side.
