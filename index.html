@@ -110,15 +110,7 @@ class SicmWidget {
     this.inputDiv = $('<div>').addClass('sicm-widget-input').appendTo(this.widgetDiv);
 
     this.inputText = $('<textarea>').addClass('sicm-widget-input-field').attr({cols: 100, rows: 25}).appendTo(this.inputDiv).val(
-`; This block is only required if you need methods not imported into the current namespace.
-; sicmutils.env/... will be available at 'S/...'
-; (ns repl.core
-;   (:require [sicmutils.env :as S])
-;   (:require-macros [repl.macro]))
-; Using '(ns ...)' overrides the +-*/ functions. Undo the override.  
-; (repl.macro/overrideCore)
-
-; Basic tests.
+`; Basic tests.
 (pTeX (- (* 7 (/ 1 2)) 2))
 (pTeX (asin -10))
 
@@ -158,7 +150,11 @@ class SicmWidget {
               (fn [_] 'Delta_v))
         f (compose (L-translate-shift 'm) (Gamma q))]
     (pTeX (f 't)))
+
+(def g (literal-function 'g (-> (X Real Real) Real)))  
+(pTeX (g 'x 'y))  
 `   );
+//this.inputText.val(``);
     this.codemirror = CodeMirror.fromTextArea(this.inputText[0], {
       lineNumbers: true,
       mode:  "clojure",
