@@ -7,18 +7,13 @@
 
 ; This overrides the `ns repl.eval` above and is used by the evaulation environment.
 (def bootstrapString"
-      (ns repl.eval
-        (:require [sicmutils.abstract.function]
-                  [sicmutils.env :as S] )
-        (:require-macros [repl.eval-macros :refer [literal-function]]))
-      (repl.eval-macros/overrideCore)")
-
-; Pull sicmutils.env into this namespace. repl.core calls (cljs.js/load-analysis-cache! repl.eval)
-; to make the items in this namespace available to the evaluation environment
-(repl.macros/bootstrap-env!)   
+    (ns repl.eval
+    (:require [sicmutils.abstract.function]
+                [sicmutils.env :as S :refer [asin acos atan compose cos cube D F->C Gamma Lagrange-equations simplify sin square up velocity]] )
+    (:require-macros [repl.eval-macros :refer [literal-function]]))")
 
 ; Utilities to interact with JS side.
 (defn pTeX [ex]
-  (let [s (->TeX (simplify ex))]
+  (let [s (->TeX (sicmutils.env/simplify ex))]
     (js/outputTex s)))
 

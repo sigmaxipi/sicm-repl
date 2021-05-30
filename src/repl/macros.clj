@@ -6,29 +6,10 @@
 (defmacro analyzer-state [[_ ns-sym]]
   `'~(get-in @cljs.env/*compiler* [:cljs.analyzer/namespaces ns-sym]))
 
-; Import sicmutils.env similar to sicmutils.env/bootstrap-repl!
-(defmacro importUnary [vals]
-  `(do 
-    ~@(for [v vals]
-      `(defn ~v [~'x] (~(symbol "sicmutils.env" (str v)) ~'x)))))
-
-(defmacro importBinary [vals]
-  `(do 
-    ~@(for [v vals]
-      `(defn ~v [~'x ~'y] (~(symbol "sicmutils.env" (str v)) ~'x ~'y)))))
-
-(defmacro importVariadic [vals]
-  `(do 
-    ~@(for [v vals]
-      `(defn ~v [& ~'xs] (apply ~(symbol "sicmutils.env" (str v)) ~'xs)))))
-
-(defmacro bootstrap-env! [] '(do
-  (repl.macros/importUnary [])
-  (repl.macros/importVariadic [asin atan compose cos cube D F->C Gamma Lagrange-equations simplify sin square up velocity])))
-
-; If (ns ...) (require ...) is called in the evaluation snippet, the math operators are overridden. This restores the bindings.
+; Initialize macros used by the evaluation environment. It can't directly use host macros.
 (defmacro loadReplMacro []
   "(ns repl.eval-macros)
+; If (ns ...) (require ...) is called in the evaluation snippet, the math operators are overridden. This restores the bindings.
     (defmacro overrideCore []
       '(do
         (ns-unmap 'cljs.core '+) (ns-unmap 'repl.core '+) (def + sicmutils.env/+)
@@ -36,7 +17,7 @@
         (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
         (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))
         
-        
+; Repeat sicmutils.env macros.        
   (defmacro literal-function
     ([f] `(sicmutils.abstract.function/literal-function ~f))
     ([f sicm-signature]

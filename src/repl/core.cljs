@@ -86,6 +86,16 @@
       :load       loader
       :ns 'repl.eval
       :source-map true}
+    (fn [result] (println "Evaluation environment initialized.")))
+  (eval-str
+    state
+    "(repl.eval-macros/overrideCore)"
+    "initialEvalStr"
+    { :context    :statement
+      :eval       js-eval
+      :load       loader
+      :ns 'repl.eval
+      :source-map true}
     (fn [result] (println "Evaluation environment initialized."))))
 (init-state state)
 

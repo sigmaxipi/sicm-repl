@@ -1,4 +1,4 @@
-See `index.html` for more info.
+See `index.html` for more info. Live demo at https://sxp.me/sicm/.
 
 Dev build:
  `clj -M -m cljs.main  --repl-opts "{:launch-browser false}" -c repl.core --repl`
