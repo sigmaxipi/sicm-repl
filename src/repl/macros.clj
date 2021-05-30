@@ -17,7 +17,7 @@
         (ns-unmap 'cljs.core '*) (ns-unmap 'repl.core '*) (def * sicmutils.env/*)
         (ns-unmap 'cljs.core '/) (ns-unmap 'repl.core '/) (def / sicmutils.env//)))
         
-; Repeat sicmutils.env macros.        
+; Declare sicmutils.env macros.
   (defmacro literal-function
     ([f] `(sicmutils.abstract.function/literal-function ~f))
     ([f sicm-signature]

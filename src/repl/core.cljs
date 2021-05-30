@@ -79,14 +79,15 @@
   ; Reinit 'repl.core as an evaulation namespace.
   (eval-str
     state
-    repl.eval/bootstrapString
+    repl.eval/bootstrap-string
     "initialEvalStr"
     { :context    :statement
       :eval       js-eval
       :load       loader
       :ns 'repl.eval
       :source-map true}
-    (fn [result] (println "Evaluation environment initialized.")))
+    (fn [result] (println "Evaluation namespace initialized.")))
+  ; FIXME: This doesn't seem to run if it's part of the bootstramString above.
   (eval-str
     state
     "(repl.eval-macros/overrideCore)"

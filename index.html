@@ -13,6 +13,10 @@ body {
 
 code {
   font-weight: bold;
+  background-color: rgb(240, 240, 240);
+  border: solid 1px black;
+  padding-left: .25em;
+  padding-right: .25em;
 }
 
 #log {
@@ -83,13 +87,13 @@ code {
   </head>
   <body>
     <p>
-      Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMutils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.<br/>
+      <h2>Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMUtils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.</h2>
       The source is the Javascript in this page and compliled ClojureScript for <code>repl.core</code>.
       There is also a <code>repl.macros</code> library and a <code>repl.eval</code> namespace used for evaluation.
-      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field <code>repl.eval</code> namespace.
-      It then uses <code>repl.eval/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.
-      <code>repl.macros/bootstrap-env!</code> only imports some items from <code>sicmutils.env</code> at the moment, but other items can be accessed via the <code>S/</code> alias such as <code>S/acos</code>.<br/>
-
+      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field in the <code>repl.eval</code> namespace.
+      Most of <code>sicmutils.env</code> is implicitly included in the <code>repl.eval</code> namespace, but some of the macros are still missing.
+      It then uses <code>repl.eval/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.<br/>
+      <br/>
       Code is available at <a href="https://github.com/sigmaxipi/sicm-repl">github.com/sigmaxipi/sicm-repl</a>.
     </p>
     <div id="log"></div>
