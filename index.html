@@ -96,7 +96,7 @@ code {
       <br/>
       Code is available at <a href="https://github.com/sigmaxipi/sicm-repl">github.com/sigmaxipi/sicm-repl</a>.
     </p>
-    <div id="log"></div>
+    <pre id="log"></pre>
     <script>
 // Utility to log events to the page rather than the console.
 function log(str, clazz) {
@@ -170,6 +170,7 @@ class SicmWidget {
         f (compose (L-translate-shift 'm) (Gamma q))]
     (pTeX (f 't)))
 
+; Macro test
 (def g (literal-function 'g (-> (X Real Real) Real)))  
 (pTeX (g 'x 'y))
 
@@ -207,9 +208,9 @@ class SicmWidget {
       }
 
       this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
-      logE("Compilation failed.");
+      logE("  Compilation failed.");
     } else {
-      log("Compilation successful.");
+      log("  Compilation successful.");
     }
   }
 

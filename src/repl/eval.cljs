@@ -9,9 +9,9 @@
 (def bootstrap-string
   (str "
     (ns repl.eval
-        (:require [sicmutils.abstract.function] [sicmutils.env :refer [" sicm-symbols "]] )
+        (:require [sicmutils.abstract.function] [sicmutils.env :refer [" sicm-symbols "]])
         (:require-macros [repl.eval-macros :refer [literal-function]]))
-    (println \"FIXME: WHY ISNT THIS CODE RUNNING WHEN SICMUTILS HAS A :refer BLOCK?\")
+    (println \"FIXME: THIS CODE ISNT RUNNING WHEN SICMUTILS HAS A :refer BLOCK SINCE THE SOURCE CODE IS FAKED BY *load-fn*.\")
     (repl.eval-macros/overrideCore)"))
 
 ; Utilities to interact with JS side.

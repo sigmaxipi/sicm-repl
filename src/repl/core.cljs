@@ -86,7 +86,7 @@
       :load       loader
       :ns 'repl.eval
       :source-map true}
-    (fn [result] (println "Evaluation namespace initialized.")))
+    (fn [result] (js/console.log "Evaluation namespace init 1" result)))
   ; FIXME: This doesn't seem to run if it's part of the bootstramString above.
   (eval-str
     state
@@ -97,7 +97,7 @@
       :load       loader
       :ns 'repl.eval
       :source-map true}
-    (fn [result] (println "Evaluation environment initialized."))))
+    (fn [result] (js/console.log  "Evaluation namespace init 2" result))))
 (init-state state)
 
 ; Output strings to Javascript side.
