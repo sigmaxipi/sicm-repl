@@ -1,6 +1,6 @@
 ; Working namespace where user code is evaluated.
 (ns repl.eval
-  (:require [clojure.string] [sicmutils.env] [sicmutils.expression.render])
+;  (:require [clojure.string] [sicmutils.env] [sicmutils.expression.render])
   (:require-macros [repl.macros]))
 
 ; This overrides the `ns repl.eval` above and is used by the evaulation environment.

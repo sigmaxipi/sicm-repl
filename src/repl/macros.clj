@@ -1,6 +1,5 @@
 (ns repl.macros
-  (:require [cljs.env])
-  (:require [sicmutils.env]))
+  (:require [cljs.env]))
 
 ; Load analyzer cache from the app environment to the evaluation to allow symbol lookups.
 (defmacro analyzer-state [[_ ns-sym]]

@@ -2,43 +2,23 @@
 
 {
     :builds {
-        :sicm-dev {
-            :asset-path "out"
-            :modules {:main {:entries [repl.core]}}
-            :output-dir "out"
-            :target :browser
+        :sicm-repl {
+            :asset-path "cljs_out"
+            :compiler-options {
+                :optimizations :advanced
+                :output-wrapper false}
             :devtools {
                 :http-root "."
-                :http-port 8700}}
-        :sicm-release {
-            :asset-path "out"
-            :compiler-options {
-                :optimizations :simple
-                :output-wrapper false}
+                :http-port 8700}
             :modules {:main {:entries [repl.core]}}
-            :output-dir "out"
+            :output-dir "cljs_out"
             :target :browser
-            :devtools {
-                :http-root "."
-                :http-port 8700}}
-        :bootstrap-dev {
-            :entries [cljs.js]
-            :exclude #{cljs.js}
-            :macros []
-            :output-dir "out/bootstrap"
-            :target :bootstrap}
-        :bootstrap-release {
-            :compiler-options {
-                :optimizations :simple
-                :output-wrapper false}
-            :entries [cljs.js]
-            :exclude #{cljs.js}
-            :macros []
-            :output-dir "out/bootstrap"
-            :target :bootstrap}
+        }
     }
     :dependencies [
-        [sicmutils/sicmutils "0.18.0"]],
+        [borkdude/sci "0.2.5"]
+;        [sicmutils/sicmutils "0.18.0"]
+    ]
     :dev-http {9000 "."}
     :source-paths ["src"]
 }
