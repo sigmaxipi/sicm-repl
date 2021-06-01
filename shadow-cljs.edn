@@ -2,10 +2,10 @@
 
 {
     :builds {
-        :sicm-repl {
+        :sicm-widget {
             :asset-path "cljs_out"
             :compiler-options {
-                :optimizations :advanced
+                :optimizations :simple
                 :output-wrapper false}
             :devtools {
                 :http-root "."
@@ -17,7 +17,7 @@
     }
     :dependencies [
         [borkdude/sci "0.2.5"]
-;        [sicmutils/sicmutils "0.18.0"]
+        [sicmutils/sicmutils "0.18.0"]
     ]
     :dev-http {9000 "."}
     :source-paths ["src"]

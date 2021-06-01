@@ -139,7 +139,7 @@ class SicmWidget {
 
 (defn L-central-polar [m U]
   (fn [[_ [r] [rdot thetadot]]]
-    (- (* .5 m
+    (- (* 0.5 m
           (+ (square rdot)
             (square (* r thetadot))))
       (U r))))
@@ -175,9 +175,11 @@ class SicmWidget {
 (pTeX (g 'x 'y))
 
 "EVALUATION COMPLETE"`   );
-    this.inputText.val(`
-(- (* 7 (/ 1 2)) 2)
-    `);
+/*
+this.inputText.val(` 
+(def g (literal-function 'g (-> (X Real Real) Real)))  
+(pTeX (g 'x 'y))
+`);*/
     this.codemirror = CodeMirror.fromTextArea(this.inputText[0], {
       lineNumbers: true,
       mode:  "clojure",
@@ -202,33 +204,14 @@ class SicmWidget {
     repl.core.evalStr(`${this.codemirror.getValue()}`, (expr, result) => this.onEvalResult(expr, result));
   }
 
-  onCompileResult(result) {
-    if (result.error !== undefined) {
-      console.error(result);
-      let cause = result.error;
-      while (cause.cause != undefined) {
-        cause = cause.cause;
-      }
-
-      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
-      logE("  Compilation failed.");
-    } else {
-      log("  Compilation successful.");
-    }
-  }
-
   onEvalResult(result) {
     if (result === undefined) {
       return;
     }
     if (result.error !== undefined) {
       console.error(result);
-      let cause = result.error;
-      while (cause.cause != undefined) {
-        cause = cause.cause;
-      }
 
-      this.outputDiv.html(`ERROR: ${cause.message} <br/> DETAILS: ${result.error.cause.data} <br/> EXPRESSION: <code>${expr}</code>`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
+      this.outputDiv.html(`ERROR: ${result.error.message} <br/> DETAILS: ${result.error.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
       logE("...Eval failed.");
     } else {
       this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');

@@ -2,20 +2,31 @@
 (ns repl.core
   (:require
     [sci.core :as sci]
-;    [sicmutils.env]
+    [sicmutils.env]
+    [sicmutils.env.sci]
+    [sicmutils.expression.render]
 ) )
 
 (defn pTeX [ex]
-;  (let [s (sicmutils.expression.render/->TeX (sicmutils.env/simplify ex))]
-    (js/outputTex ex))
+    (-> ex sicmutils.env/simplify sicmutils.expression.render/->TeX js/outputTex))
+
+(def context-options {
+  :namespaces sicmutils.env.sci/namespaces
+  :bindings
+    (merge {
+      'pTeX pTeX
+      'literal-function sicmutils.env.sci.macros/literal-function
+    }
+    (sicmutils.env.sci/namespaces 'sicmutils.env))
+  })
+(def sicm-context  (sci/init context-options))
 
 (defn ^:export evalStr [source eval-cb]
   (try 
     (eval-cb (clj->js {:value
-      (sci/eval-string source  {:bindings {'pTeX pTeX}})}))
-    (catch js/Error e (println "EXCEPTION " e))))
-  
-
+      (sci/eval-string*  sicm-context source)}))
+    (catch js/Error e 
+      (eval-cb (clj->js {:error e})))))
 
 
 (js/log "...CLJS loading complete.")
