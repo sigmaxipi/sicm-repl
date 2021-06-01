@@ -4,21 +4,18 @@
     [sci.core :as sci]
     [sicmutils.env]
     [sicmutils.env.sci]
-    [sicmutils.expression.render]
-) )
+    [sicmutils.expression.render]))
 
 (defn pTeX [ex]
     (-> ex sicmutils.env/simplify sicmutils.expression.render/->TeX js/outputTex))
 
 (def context-options {
   :namespaces sicmutils.env.sci/namespaces
-  :bindings
-    (merge {
+  :bindings (
+    merge {
       'pTeX pTeX
-      'literal-function sicmutils.env.sci.macros/literal-function
     }
-    (sicmutils.env.sci/namespaces 'sicmutils.env))
-  })
+    (sicmutils.env.sci/namespaces 'sicmutils.env))})
 (def sicm-context  (sci/init context-options))
 
 (defn ^:export evalStr [source eval-cb]
@@ -27,6 +24,5 @@
       (sci/eval-string*  sicm-context source)}))
     (catch js/Error e 
       (eval-cb (clj->js {:error e})))))
-
 
 (js/log "...CLJS loading complete.")

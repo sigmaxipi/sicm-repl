@@ -53,6 +53,7 @@ code {
 
 .CLJS {
   background-color: lightgreen;
+  white-space: pre;
 }
 
 .sicm-widget-output-error {
@@ -89,7 +90,7 @@ code {
     <p>
       <h2>Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMUtils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.</h2>
       The source is the Javascript in this page and compliled ClojureScript for <code>repl.core</code>.
-      The ClojureScript code uses <a href="https://github.com/borkdude/sci">Small Clojure Interpreter<</a> to evaluate the contents of the <code>textarea</code> input field.
+      The ClojureScript code uses <a href="https://github.com/borkdude/sci">Small Clojure Interpreter</a> to evaluate the contents of the <code>textarea</code> input field.
       <code>sicmutils.env</code> is implicitly included in the <code>default</code> namespace.
       It then uses <code>repl.core/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.<br/>
       <br/>
@@ -209,12 +210,18 @@ this.inputText.val(`
     }
     if (result.error !== undefined) {
       console.error(result);
-
       this.outputDiv.html(`ERROR: ${result.error.message} <br/> DETAILS: ${result.error.data}`).removeClass('sicm-widget-output').addClass('sicm-widget-output-error');
       logE("...Eval failed.");
     } else {
       this.outputDiv.removeClass('sicm-widget-output-error').addClass('sicm-widget-output');
-      this.outputCljs(result.value && result.value.toString());
+
+      const resultStr = result.value !== null ? result.value.toString() : ""
+      if (resultStr === "[object Object]") {
+        this.outputCljs(JSON.stringify(result.value, undefined, 2).substr(0, 500));
+        console.log(result.value);
+      } else {
+        this.outputCljs(resultStr);
+      }
       MathJax.typeset();
       log("...Eval completed.");
     }    
