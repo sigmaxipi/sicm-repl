@@ -224,6 +224,11 @@ this.inputText.val(`
       }
       MathJax.typeset();
       log("...Eval completed.");
+
+      if (typeof result.value === "object") {
+        this.outputCljs(JSON.stringify(result.value, undefined, 2).substr(0, 500));
+        console.log(result.value);
+      }
     }    
   }
 
