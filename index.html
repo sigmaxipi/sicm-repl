@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="codemirror.css">
+    <link rel="stylesheet" href="codemirror/codemirror.css">
     <style>
 
 body {
@@ -82,17 +82,16 @@ code {
     </style>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="codemirror.js"></script>
-    <script src="clojure.js"></script>
+    <script src="codemirror/codemirror.js"></script>
+    <script src="codemirror/clojure.js"></script>
   </head>
   <body>
     <p>
       <h2>Experimental port of <a href="https://github.com/sicmutils/sicmutils">SICMUtils</a> into a self-hosted <a href="https://clojurescript.org/">ClojureScript</a> widget.</h2>
       The source is the Javascript in this page and compliled ClojureScript for <code>repl.core</code>.
-      There is also a <code>repl.macros</code> library and a <code>repl.eval</code> namespace used for evaluation.
-      The ClojureScript code calls <code>cljs.js/eval-str</code> to evaluate the contents of the <code>textarea</code> input field in the <code>repl.eval</code> namespace.
-      Most of <code>sicmutils.env</code> is implicitly included in the <code>repl.eval</code> namespace, but some of the macros are still missing.
-      It then uses <code>repl.eval/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.<br/>
+      The ClojureScript code uses <a href="https://github.com/borkdude/sci">Small Clojure Interpreter<</a> to evaluate the contents of the <code>textarea</code> input field.
+      <code>sicmutils.env</code> is implicitly included in the <code>default</code> namespace.
+      It then uses <code>repl.core/pTeX</code> to send the result back to the JS side which formats the string with <a href="https://www.mathjax.org/">MathJax</a>.<br/>
       <br/>
       Code is available at <a href="https://github.com/sigmaxipi/sicm-repl">github.com/sigmaxipi/sicm-repl</a>.
     </p>

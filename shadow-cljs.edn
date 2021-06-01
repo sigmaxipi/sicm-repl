@@ -6,7 +6,8 @@
             :asset-path "cljs_out"
             :compiler-options {
                 :optimizations :simple
-                :output-wrapper false}
+                :output-wrapper false
+                :source-map true}
             :devtools {
                 :http-root "."
                 :http-port 8700}

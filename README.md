@@ -1,9 +1,14 @@
 See `index.html` for more info. Live demo at https://sxp.me/sicm/.
 
+Prerequisites:
+  * Make sure [Shadow CLJS](https://github.com/thheller/shadow-cljs) is installed.
+  * Run `npm install` to fetch JS packages.
+
+
 Dev build:
- `clj -M -m cljs.main  --repl-opts "{:launch-browser false}" -c repl.core --repl`
+ `shadow-cljs watch sicm-widget`
  
-Prod build:
- `rm -r out; time clj -M -m cljs.main -co build.edn -c repl.core && cat out/cljsjs/fraction/production/bigfraction.min.inc.js out/main.js > out/main.js2 && mv out/main.js2 out/main.js  &&  clj -M -m cljs.main  --serve`
+Release build:
+ `shadow-cljs release sicm-widget` and open `index.html`.
 
 Open http://localhost:9000 after the build.
