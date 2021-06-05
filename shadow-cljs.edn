@@ -5,7 +5,7 @@
         :sicm-widget {
             :asset-path "cljs_out"
             :compiler-options {
-                :optimizations :simple
+                :optimizations :advanced
                 :output-wrapper false
                 :source-map true}
             :devtools {
@@ -18,7 +18,7 @@
     }
     :dependencies [
         [borkdude/sci "0.2.5"]
-        [sicmutils/sicmutils "0.18.0"]
+        [sicmutils/sicmutils "0.19.0"]
     ]
     :dev-http {9000 "."}
     :source-paths ["src"]

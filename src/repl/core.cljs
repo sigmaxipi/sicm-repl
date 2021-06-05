@@ -1,10 +1,13 @@
 ; Module that contains the primary evaluation framework.
 (ns repl.core
   (:require
+    ["fraction.js/bigfraction.js" :as Fraction]
     [sci.core :as sci]
     [sicmutils.env]
     [sicmutils.env.sci]
     [sicmutils.expression.render]))
+
+(def dummy (.div (.mul (Fraction 1 2) 3) 4)) ; Include to avoid build problems.
 
 (defn pTeX [ex]
     (-> ex sicmutils.env/simplify sicmutils.expression.render/->TeX js/outputTex))
