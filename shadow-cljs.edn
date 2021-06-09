@@ -7,6 +7,7 @@
             :compiler-options {
                 :optimizations :advanced
                 :output-wrapper false
+                :pseudo-names true
                 :source-map true}
             :devtools {
                 :http-root "."
