@@ -1,26 +1,13 @@
-
-
-{
-    :builds {
-        :sicm-widget {
-            :asset-path "cljs_out"
-            :compiler-options {
-                :optimizations :advanced
-                :output-wrapper false
-                :pseudo-names true
-                :source-map true}
-            :devtools {
-                :http-root "."
-                :http-port 8700}
-            :modules {:main {:entries [repl.core]}}
-            :output-dir "cljs_out"
-            :target :browser
-        }
-    }
-    :dependencies [
-        [borkdude/sci "0.2.5"]
-        [sicmutils/sicmutils "0.19.0"]
-    ]
-    :dev-http {9000 "."}
-    :source-paths ["src"]
-}
+{:deps true
+ :builds {:sicm-widget
+          {:asset-path "cljs_out"
+           :compiler-options {:optimizations :advanced
+                              :output-wrapper false
+                              :pseudo-names true
+                              :source-map true}
+           :devtools {:http-root "."
+                      :http-port 8700}
+           :modules {:main {:entries [repl.core]}}
+           :output-dir "cljs_out"
+           :target :browser}}
+ :dev-http {9000 "."}}
